@@ -3,86 +3,103 @@
 #include <sstream>
 
 #include "ray.h"
+#include "color.h"
 
 /// <summary>
-/// Returns true if the given ray hits a sphere of the given radius and center
+/// Returns the root if the given ray hits a sphere of the given radius and center
 /// </summary>
 /// <param name="center">Center of the sphere</param>
 /// <param name="radius">Radius of the sphere</param>
 /// <param name="r">Ray</param>
-/// <returns></returns>
-bool hit_sphere(const vec3& center, float radius, const ray& r)
+/// <returns>Root of the sphere intersection</returns>
+double hit_sphere(const point3& center, double radius, const ray& r)
 {
-	vec3 oc = r.origin() - center; // Make ray from origin to center of sphere
+	vec3 oc = r.origin() - center; // Make ray pointing outward from the sphere in the direction of the ray
 
-	// Get roots of equation
-	float a = dot(r.direction(), r.direction());
-	float b = 2.0f * dot(oc, r.direction());
-	float c = dot(oc, oc) - radius * radius;
-
-	float discriminant = b * b - 4 * a * c;
-
-	return (discriminant > 0);
+	// Get coefficients of equation
+	auto a = dot(r.direction(), r.direction());
+	auto b = 2.0f * dot(oc, r.direction());
+	auto c = dot(oc, oc) - radius * radius;
+	
+	auto discriminant = b * b - 4 * a * c;
+	
+	// Return root depending on discriminant
+	if (discriminant < 0.0)
+	{
+		return -1.0f;
+	}
+	else
+	{
+		return (-b - sqrt(discriminant) / (2.0f * a));
+	}
 }
 
 /// <summary>
-/// Linearly blend white and blue depending on the y coordinate
+/// Linearly blend white and blue depending on the y coordinate if ray does not hit sphere
 /// </summary>
 /// <param name="r">Ray</param>
-/// <returns></returns>
-vec3 set_color(const ray& r)
+/// <returns>Color of the ray</returns>
+vec3 ray_color(const ray& r)
 {
-	// Check if rayu hits sphere
-	if (hit_sphere(vec3(0.0, 0.0, -1.0), 0.5f, r))
+	auto t = hit_sphere(point3(0.0, 0.0, -1), 0.5, r); // Get roots of sphere-ray intersection
+
+	// Check if the ray hits the sphere
+	if(t > 0.0)
 	{
-		return vec3(1.0, 0.0, 0.0); // Set color as red if hit
+		vec3 N = unit_vector(r.at(t) - vec3(0.0, 0.0, -1.0));
+		return 0.5 * color(N.x() + 1.0, N.y() + 1.0, N.z() + 1.0);
 	}
-
-	vec3 unit_dir = unit_vector(r.direction()); // Make unit vector
-	float t = 0.5f * (unit_dir.y() + 1.0f); // Change range from [-1, 1] to [0, 1]
-
-	return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
+	else
+	{
+		vec3 unit = unit_vector(r.direction());
+		t = 0.5 * (unit.y() + 1.0);
+		return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+	}
 }
 
 /// <summary>
-/// Write a ray tracer into a .ppm file
+/// Write a ray traced colors into a .ppm file
 /// </summary>
 /// <returns></returns>
 int main()
 {
-	std::ofstream file("image.ppm");
+	std::fstream file("image.ppm");
 
-	int nx = 200;
-	int ny = 100;
+	// Image
+	const auto aspect = 16.0 / 9.0;
+	int width = 400;
+	int height = static_cast<int>(width / aspect);
 
-	std::stringstream ss;
-	ss << "P3" << std::endl << nx << " " << ny << "\n255" << std::endl;
+	// Camera
+	auto viewport_height = 2.0;
+	auto viewport_width = aspect * viewport_height;
+	auto focal_length = 1.0;
 
-	vec3 lower_left_corner(-2.0, -1.0, -1.0);
-	vec3 horizontal(4.0, 0.0, 0.0);
-	vec3 vertical(0.0, 2.0, 0.0);
-	vec3 origin(0.0, 0.0, 0.0);
+	auto origin = point3(0.0, 0.0, 0.0);
+	auto horizontal = vec3(viewport_width, 0.0, 0.0);
+	auto vertical = vec3(0.0, viewport_height, 0.0);
+	auto lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - vec3(0.0, 0.0, focal_length);
 
-	for (int j = ny - 1; j >= 0; j--)
+	// Render
+	//std::stringstream ss;
+	file << "P3" << std::endl << width << " " << height << "\n255" << std::endl;
+
+	for (int j = height - 1; j >= 0; j--)
 	{
-		for (int i = 0; i < nx; i++)
+		for (int i = 0; i < width; i++)
 		{
-			float u = float(i) / float(nx);
-			float v = float(j) / float(ny);
+			auto u = double(i) / (width - 1);
+			auto v = double(j) / (height - 1);
 
-			ray r(origin, lower_left_corner + u * horizontal + v * vertical);
-			
-			vec3 col = set_color(r);
+			ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin);
+			color pixel_color = ray_color(r);
+			write_color(file, pixel_color);
 
-			int ir = int(255.99 * col[0]);
-			int ig = int(255.99 * col[1]);
-			int ib = int(255.99 * col[2]);
-
-			ss << ir << " " << ig << " " << ib << std::endl;
+			//ss << pixel_color[0] << " " << pixel_color[1] << " " << pixel_color[2] << std::endl;
 		}
 	}
 
-	file << ss.str() << std::endl;
+	//file << ss.str() << std::endl;
 
 	file.close();
 
