@@ -14,14 +14,14 @@
 /// <returns>Root of the sphere intersection</returns>
 double hit_sphere(const point3& center, double radius, const ray& r)
 {
-	vec3 oc = r.origin() - center; // Make ray pointing outward from the sphere in the direction of the ray
+	vec3 oc = r.origin() - center; // Make ray from the center of the sphere in the direction of the ray
 
-	// Get coefficients of equation
-	auto a = dot(r.direction(), r.direction());
-	auto b = 2.0f * dot(oc, r.direction());
-	auto c = dot(oc, oc) - radius * radius;
+	// Get coefficients of equation (use b=2h to simplify equation)
+	auto a = r.direction().length_squared();
+	auto half_b = dot(oc, r.direction());
+	auto c = oc.length_squared() - radius * radius;
 	
-	auto discriminant = b * b - 4 * a * c;
+	auto discriminant = half_b * half_b - 4 * a * c;
 	
 	// Return root depending on discriminant
 	if (discriminant < 0.0)
@@ -30,7 +30,7 @@ double hit_sphere(const point3& center, double radius, const ray& r)
 	}
 	else
 	{
-		return (-b - sqrt(discriminant) / (2.0f * a));
+		return (-half_b - sqrt(discriminant) / a);
 	}
 }
 
@@ -51,8 +51,8 @@ vec3 ray_color(const ray& r)
 	}
 	else
 	{
-		vec3 unit = unit_vector(r.direction());
-		t = 0.5 * (unit.y() + 1.0);
+		vec3 unit_dir = unit_vector(r.direction());
+		t = 0.5 * (unit_dir.y() + 1.0);
 		return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 	}
 }
