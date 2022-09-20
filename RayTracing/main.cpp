@@ -39,27 +39,39 @@ double hit_sphere(const point3& center, double radius, const ray& r)
 }
 
 /// <summary>
-/// Set the color of the ray given a world of hittable objects
+/// Recursively set the color of the ray given a world of hittable objects
 /// </summary>
 /// <param name="r">Ray</param>
 /// <param name="world">Hittable objects</param>
+/// <param name="depth">Maximum recursion depth</param>
 /// <returns>Color</returns>
-color ray_color(const ray& r, const hittable& world)
+color ray_color(const ray& r, const hittable& world, int depth)
 {
 	color col;
 
 	// Check if the ray hits the world
 	hit_record rec;
-	if (world.hit(r, 0, infinity, rec))
+
+	// Check if we've exceeded the ray bounce limit, no more light is gathered is we have
+	if (depth <= 0)
 	{
-		col = 0.5 * (rec.normal + color(1.0, 1.0, 1.0));
+		col = color(0.0, 0.0, 0.0);
 	}
 	else
 	{
-		vec3 unit_dir = unit_vector(r.direction());
-		auto t = 0.5 * (unit_dir.y() + 1.0);
+		if (world.hit(r, 0, infinity, rec))
+		{
+			point3 target = rec.p + rec.normal + random_in_unit_sphere(); // Choose a random target point inside the sphere
+			
+			col = 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
+		}
+		else
+		{
+			vec3 unit_dir = unit_vector(r.direction());
+			auto t = 0.5 * (unit_dir.y() + 1.0);
 
-		col = (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+			col = (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+		}
 	}
 
 	return col;
@@ -78,6 +90,7 @@ int main()
 	int width = 400;
 	int height = static_cast<int>(width / aspect);
 	const int samples_per_pixel = 100;
+	const int max_depth = 50;
 
 	// World
 	hittable_list world;
@@ -102,7 +115,7 @@ int main()
 				auto v = (j + random_double()) / (height - 1);
 
 				ray r = cam.get_ray(u, v); // Shoot ray
-				pixel_color += ray_color(r, world); // Find color of pixel
+				pixel_color += ray_color(r, world, max_depth); // Find color of pixel
 
 			}
 
