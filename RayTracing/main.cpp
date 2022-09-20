@@ -7,6 +7,7 @@
 #include "color.h"
 #include "hittable_list.h"
 #include "sphere.h"
+#include "camera.h"
 
 /// <summary>
 /// Returns the root if the given ray hits a sphere of the given radius and center
@@ -76,37 +77,36 @@ int main()
 	const auto aspect = 16.0 / 9.0;
 	int width = 400;
 	int height = static_cast<int>(width / aspect);
+	const int samples_per_pixel = 100;
 
 	// World
 	hittable_list world;
 	world.add(make_shared<sphere>(point3(0.0, 0.0, -1.0), 0.5));
-	world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100));
+	world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0));
 
 	// Camera
-	auto viewport_height = 2.0;
-	auto viewport_width = aspect * viewport_height;
-	auto focal_length = 1.0;
-
-	auto origin = point3(0.0, 0.0, 0.0);
-	auto horizontal = vec3(viewport_width, 0.0, 0.0);
-	auto vertical = vec3(0.0, viewport_height, 0.0);
-	auto lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - vec3(0.0, 0.0, focal_length);
+	camera cam;
 
 	// Render
 	file << "P3" << std::endl << width << " " << height << "\n255" << std::endl;
 
-	for (int j = height - 1; j >= 0; j--)
+	for (int j = height - 1; j >= 0; --j)
 	{
-		for (int i = 0; i < width; i++)
+		for (int i = 0; i < width; ++i)
 		{
-			auto u = double(i) / (width - 1);
-			auto v = double(j) / (height - 1);
+			color pixel_color(0.0, 0.0, 0.0);
 
-			// Find color of pixel
-			ray r(origin, lower_left_corner + u * horizontal + v * vertical);
-			color pixel_color = ray_color(r, world);
+			for (int s = 0; s < samples_per_pixel; ++s)
+			{
+				auto u = (i + random_double()) / (width - 1);
+				auto v = (j + random_double()) / (height - 1);
 
-			write_color(file, pixel_color); // Write color into file
+				ray r = cam.get_ray(u, v); // Shoot ray
+				pixel_color += ray_color(r, world); // Find color of pixel
+
+			}
+
+			write_color(file, pixel_color, samples_per_pixel); // Write color into file
 		}
 	}
 
