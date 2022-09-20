@@ -62,6 +62,16 @@ public:
         const auto s = 1e-8;
         return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
     }
+
+    inline static vec3 random()
+    {
+        return vec3(random_double(), random_double(), random_double());
+    }
+
+    inline static vec3 random(double min, double max)
+    {
+        return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
+    }
 };
 
 
@@ -119,8 +129,23 @@ inline vec3 cross(const vec3& u, const vec3& v)
         u.e[0] * v.e[1] - u.e[1] * v.e[0]);
 }
 
-inline vec3 unit_vector(vec3 v) {
+inline vec3 unit_vector(vec3 v)
+{
     return v / v.length();
+}
+
+/// <summary>
+/// Get a random point inside a unit sphere
+/// </summary>
+/// <returns></returns>
+vec3 random_in_unit_sphere()
+{
+    while (true)
+    {
+        auto p = vec3::random(-1, 1);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
 }
 
 #endif
