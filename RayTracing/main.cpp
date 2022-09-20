@@ -59,7 +59,8 @@ color ray_color(const ray& r, const hittable& world, int depth)
 	}
 	else
 	{
-		if (world.hit(r, 0, infinity, rec))
+		// Check if ray hits target and prevent shadow acne
+		if (world.hit(r, 0.001, infinity, rec))
 		{
 			point3 target = rec.p + rec.normal + random_in_unit_sphere(); // Choose a random target point inside the sphere
 			
