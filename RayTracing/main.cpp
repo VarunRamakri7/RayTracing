@@ -21,7 +21,7 @@ double hit_sphere(const point3& center, double radius, const ray& r)
 	auto half_b = dot(oc, r.direction());
 	auto c = oc.length_squared() - radius * radius;
 	
-	auto discriminant = half_b * half_b - 4 * a * c;
+	auto discriminant = half_b * half_b - a * c;
 	
 	// Return root depending on discriminant
 	if (discriminant < 0.0)
@@ -30,7 +30,7 @@ double hit_sphere(const point3& center, double radius, const ray& r)
 	}
 	else
 	{
-		return (-half_b - sqrt(discriminant) / a);
+		return (-half_b - sqrt(discriminant)) / a;
 	}
 }
 
