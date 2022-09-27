@@ -158,4 +158,25 @@ vec3 random_unit_vector()
     return unit_vector(random_in_unit_sphere());
 }
 
+/// <summary>
+/// Uniformly scatter direction for all angles away from the hit point,
+/// with no dependence on the angle from the normal
+/// </summary>
+/// <param name="normal">Object's normal</param>
+/// <returns>Point in the same hemisphere as the normal</returns>
+vec3 random_in_hemisphere(const vec3& normal)
+{
+    vec3 in_unit_sphere = random_in_unit_sphere();
+    
+    // Check if point is in the same hemisphere as the normal
+    if (dot(in_unit_sphere, normal) > 0.0)
+    {
+        return in_unit_sphere;
+    }
+    else
+    {
+        return -in_unit_sphere;
+    }
+}
+
 #endif
