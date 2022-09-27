@@ -148,4 +148,14 @@ vec3 random_in_unit_sphere()
     }
 }
 
+/// <summary>
+/// Pick random points on the unit sphere (offset along the surface normal)
+/// For True Lambertian Reflection
+/// </summary>
+/// <returns>Random point on unit sphere along the surface normal</returns>
+vec3 random_unit_vector()
+{
+    return unit_vector(random_in_unit_sphere());
+}
+
 #endif
