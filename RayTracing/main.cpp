@@ -62,7 +62,7 @@ color ray_color(const ray& r, const hittable& world, int depth)
 		// Check if ray hits target and prevent shadow acne
 		if (world.hit(r, 0.001, infinity, rec))
 		{
-			point3 target = rec.p + rec.normal + random_in_unit_sphere(); // Choose a random target point inside the sphere
+			point3 target = rec.p + rec.normal + random_unit_vector(); // Choose a random point on the sphere
 			
 			col = 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
 		}
@@ -110,8 +110,11 @@ int main()
 		{
 			color pixel_color(0.0, 0.0, 0.0);
 
+			// Antialiase image
 			for (int s = 0; s < samples_per_pixel; ++s)
 			{
+				// Send rays through each sample of a pixel and then average them for the pixel
+	
 				auto u = (i + random_double()) / (width - 1);
 				auto v = (j + random_double()) / (height - 1);
 
