@@ -8,6 +8,7 @@
 #include "hittable_list.h"
 #include "sphere.h"
 #include "camera.h"
+#include "material.h"
 
 /// <summary>
 /// Returns the root if the given ray hits a sphere of the given radius and center
@@ -62,9 +63,25 @@ color ray_color(const ray& r, const hittable& world, int depth)
 		// Check if ray hits target and prevent shadow acne
 		if (world.hit(r, 0.001, infinity, rec))
 		{
+			// Metal material
+			ray scattered;
+			color attenuation;
+
+			if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+			{
+				col = attenuation * ray_color(scattered, world, depth - 1);
+			}
+			else
+			{
+				col = color(0.0, 0.0, 0.0);
+			}
+
+			/*
+			// Lambertial Material
 			point3 target = rec.p + random_in_hemisphere(rec.normal); // Choose a random point on the sphere
-			
+
 			col = 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
+			*/
 		}
 		else
 		{
@@ -95,8 +112,18 @@ int main()
 
 	// World
 	hittable_list world;
-	world.add(make_shared<sphere>(point3(0.0, 0.0, -1.0), 0.5));
-	world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0));
+
+	// Make materials for world
+	auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
+	auto material_center = make_shared<lambertian>(color(0.7, 0.3, 0.3));
+	auto material_left = make_shared<metal>(color(0.8, 0.8, 0.8));
+	auto material_right = make_shared<metal>(color(0.8, 0.6, 0.2));
+
+	// Add objects with materials to world
+	world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0, material_ground));
+	world.add(make_shared<sphere>(point3(0.0, 0.0, -1.0), 0.5, material_center));
+	world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.5, material_left));
+	world.add(make_shared<sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));
 
 	// Camera
 	camera cam;
