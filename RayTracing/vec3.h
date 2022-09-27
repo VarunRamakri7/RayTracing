@@ -179,4 +179,15 @@ vec3 random_in_hemisphere(const vec3& normal)
     }
 }
 
+/// <summary>
+/// Reflect a vector along a normal
+/// </summary>
+/// <param name="v">Vector to reflect</param>
+/// <param name="n">Normal to reflect along</param>
+/// <returns>Reflection of v on n</returns>
+vec3 reflect(const vec3& v, const vec3& n)
+{
+    return v - 2 * dot(v, n) * n;
+}
+
 #endif
