@@ -190,4 +190,22 @@ vec3 reflect(const vec3& v, const vec3& n)
     return v - 2 * dot(v, n) * n;
 }
 
+/// <summary>
+/// Refract the vector along a normal between two mediums
+/// with indices of refractions as etai and etat.
+/// </summary>
+/// <param name="uv">Incident vector</param>
+/// <param name="n">Normal to surface</param>
+/// <param name="etai_by_etat">Division of indices of refraction</param>
+/// <returns></returns>
+vec3 refract(const vec3& uv, const vec3& n, double etai_by_etat)
+{
+    auto cos_theta = fmin(dot(-uv, n), 1.0); // Get angle between ray and normal
+    
+    vec3 r_out_perp = etai_by_etat * (uv + cos_theta * n); // Parallel out ray
+    vec3 r_out_par = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n; // Perpendicular out ray
+
+    return r_out_perp + r_out_par; // Refracted ray
+}
+
 #endif
