@@ -107,9 +107,29 @@ class dielectric : public material
             double ratio_refr = rec.front_face ? (1.0 / ir) : ir; // Set ratio of refraction
 
             vec3 unit_dir = unit_vector(r_in.direction());
+
+            // Get angles of refraction
+            double cos_theta = fmin(dot(-unit_dir, rec.normal), 1.0);
+            double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+            vec3 direction;
+
+            // Check for total internal reflection
+            bool can_refract = ratio_refr * sin_theta <= 1.0;
+            if (can_refract)
+            {
+                // Refract ray
+                direction = refract(unit_dir, rec.normal, ratio_refr);
+            }
+            else
+            {
+                // Reflect ray
+                direction = reflect(unit_dir, rec.normal);
+            }
+
             vec3 refracted = refract(unit_dir, rec.normal, ratio_refr);
 
-            scattered = ray(rec.p, refracted);
+            scattered = ray(rec.p, direction);
 
             return true;
         }
