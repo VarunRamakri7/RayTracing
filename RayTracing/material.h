@@ -116,7 +116,7 @@ class dielectric : public material
 
             // Check for total internal reflection
             bool can_refract = ratio_refr * sin_theta <= 1.0;
-            if (can_refract)
+            if (can_refract || reflectance(cos_theta, ratio_refr) > random_double())
             {
                 // Refract ray
                 direction = refract(unit_dir, rec.normal, ratio_refr);
@@ -132,6 +132,16 @@ class dielectric : public material
             scattered = ray(rec.p, direction);
 
             return true;
+        }
+
+    private:
+        static double reflectance(double cos, double ref_idx)
+        {
+            // Use Schlick's Approximation for reflectance
+            auto r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+            r0 = r0 * r0;
+
+            return r0 + (1.0 - r0) * pow((1.0 - cos), 5);
         }
 };
 #endif
