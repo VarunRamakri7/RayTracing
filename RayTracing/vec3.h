@@ -180,6 +180,23 @@ vec3 random_in_hemisphere(const vec3& normal)
 }
 
 /// <summary>
+/// Get a random point in a disk.
+/// Use for depth of field
+/// </summary>
+/// <returns>Point in disk</returns>
+vec3 random_in_unit_disk()
+{
+    while (true)
+    {
+        auto p = vec3(random_double(-1.0, 1.0), random_double(-1.0, 1.0), 0.0);
+
+        if (p.length_squared() >= 1.0) continue;
+
+        return p;
+    }
+}
+
+/// <summary>
 /// Reflect a vector along a normal
 /// </summary>
 /// <param name="v">Vector to reflect</param>
