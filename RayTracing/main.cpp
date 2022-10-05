@@ -131,9 +131,9 @@ int main()
 
 	// Image
 	const auto aspect = 3.0 / 2.0;
-	int width = 800;
+	int width = 1200;
 	int height = static_cast<int>(width / aspect);
-	const int samples_per_pixel = 100;
+	const int samples_per_pixel = 200;
 	const int max_depth = 50;
 
 	// World
