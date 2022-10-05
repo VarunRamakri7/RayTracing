@@ -11,35 +11,6 @@
 #include "material.h"
 
 /// <summary>
-/// Returns the root if the given ray hits a sphere of the given radius and center
-/// </summary>
-/// <param name="center">Center of the sphere</param>
-/// <param name="radius">Radius of the sphere</param>
-/// <param name="r">Ray</param>
-/// <returns>Root of the sphere intersection</returns>
-double hit_sphere(const point3& center, double radius, const ray& r)
-{
-	vec3 oc = r.origin() - center; // Make ray from the center of the sphere in the direction of the ray
-
-	// Get coefficients of equation (use b=2h to simplify equation)
-	auto a = r.direction().length_squared();
-	auto half_b = dot(oc, r.direction());
-	auto c = oc.length_squared() - radius * radius;
-	
-	auto discriminant = half_b * half_b - a * c;
-	
-	// Return root depending on discriminant
-	if (discriminant < 0.0)
-	{
-		return -1.0f;
-	}
-	else
-	{
-		return (-half_b - sqrt(discriminant)) / a;
-	}
-}
-
-/// <summary>
 /// Recursively set the color of the ray given a world of hittable objects
 /// </summary>
 /// <param name="r">Ray</param>
